@@ -1,0 +1,119 @@
+{% extends "jogo/base.html" %}
+{% block titulo %}{{ sala.titulo }} · Sorte Animal{% endblock %}
+{% block pagina %}painel{% endblock %}
+{% block dados %}data-codigo="{{ sala.codigo }}" data-jogada="{% if aberta %}{{ aberta.id }}{% elif ultima %}{{ ultima.id }}{% endif %}" data-status="{% if aberta %}aberta{% elif ultima %}encerrada{% else %}espera{% endif %}"{% endblock %}
+{% block conteudo %}
+{% if not permitido %}
+<section class="cartao-form estreito">
+  <h1>Essa sala é de {{ sala.anfitriao }}.</h1>
+  <p class="lead">O código <strong>{{ sala.codigo }}</strong> é para quem vai jogar. O painel de montar fica no navegador de quem criou.</p>
+  <a class="botao" href="{% url 'sala' sala.codigo %}">Entrar como jogador</a>
+</section>
+{% else %}
+<section class="convite">
+  <div>
+    <p class="olho">Código para compartilhar</p>
+    <p class="codigo" id="codigo">{{ sala.codigo }}</p>
+    <p class="lead">{{ sala.titulo }} · criado por {{ sala.anfitriao }}</p>
+  </div>
+  <button type="button" id="copiar" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'sala' sala.codigo %}">Copiar link</button>
+</section>
+<p class="faixa" id="broker">Conectando ao middleware…</p>
+<p id="aviso" class="avisos"></p>
+
+<div class="grade-painel">
+  <div>
+    <article class="bloco">
+      <header><h2>Animais da casa</h2></header>
+      <p class="miudo">Além dos 25 bichos da plataforma, você pode colocar um animal com o nome e a foto que quiser.</p>
+      {% if extras %}
+        <div class="fotos-extras">
+          {% for extra in extras %}
+            <figure><img src="{{ extra.imagem }}" alt=""><figcaption>{{ extra.nome }}</figcaption></figure>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" class="linha-form">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="animal">
+        <label>Nome<input name="nome" maxlength="40" required placeholder="Ex.: Capivara"></label>
+        <label>Imagem<input name="imagem" type="file" accept="image/png,image/jpeg,image/webp,image/gif" required></label>
+        <button type="submit">Adicionar</button>
+      </form>
+    </article>
+
+    <article class="bloco">
+      <header><h2>Nova jogada</h2></header>
+      <p class="miudo">Marque os animais que vão aparecer nessa jogada. No mínimo dois.</p>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="jogada">
+        <div class="chips">
+          {% for animal in animais %}
+            <label class="chip">
+              <input type="checkbox" name="grupo" value="{{ animal.grupo }}">
+              <span class="emoji">{{ animal.emoji }}</span>
+              <span>{{ animal.nome }}</span>
+            </label>
+          {% endfor %}
+          {% for extra in extras %}
+            <label class="chip">
+              <input type="checkbox" name="extra" value="{{ extra.id }}">
+              <img src="{{ extra.imagem }}" alt="">
+              <span>{{ extra.nome }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        <button type="submit">Guardar jogada</button>
+      </form>
+    </article>
+  </div>
+
+  <aside>
+    <article class="bloco">
+      <header>
+        <h2>Jogadas</h2>
+        <span id="presentes">{{ placar|length }} na sala</span>
+      </header>
+      {% for jogada in jogadas %}
+        <section class="jogada {% if jogada.status == 'aberta' %}aberta{% endif %}">
+          <p class="olho">Jogada {{ jogada.ordem }} · {{ jogada.status }}</p>
+          <div class="minis">
+            {% for opcao in jogada.opcoes.all %}
+              <span>{% if opcao.imagem %}<img src="{{ opcao.imagem }}" alt="">{% else %}{{ opcao.emoji }}{% endif %} {{ opcao.nome }}</span>
+            {% endfor %}
+          </div>
+          {% if jogada.status == 'encerrada' %}
+            <p class="resultado-mini">Sorteado: {{ jogada.animal_sorteado }}</p>
+          {% endif %}
+          {% if jogada.status == 'rascunho' and not aberta %}
+            <button type="button" data-abrir="{{ jogada.id }}">Abrir esta jogada</button>
+          {% endif %}
+          {% if jogada.status == 'rascunho' %}
+            <form method="post" class="sumir">
+              {% csrf_token %}
+              <input type="hidden" name="acao" value="apagar">
+              <input type="hidden" name="jogada" value="{{ jogada.id }}">
+              <button type="submit" class="texto">Apagar</button>
+            </form>
+          {% endif %}
+        </section>
+      {% empty %}
+        <p class="miudo">Nenhuma jogada ainda. Escolha os animais ao lado.</p>
+      {% endfor %}
+      {% if aberta %}
+        <button type="button" id="sortear">Sortear um animal</button>
+        <h3>Escolhas que chegaram</h3>
+        <ul id="apostas"><li class="miudo">Ninguém escolheu ainda.</li></ul>
+      {% endif %}
+    </article>
+    <article class="bloco">
+      <header><h2>Placar</h2></header>
+      <ol id="placar">
+        {% for pessoa in placar %}<li>{{ pessoa.nome }} · {{ pessoa.pontos }}</li>{% empty %}<li class="miudo">A sala ainda está vazia.</li>{% endfor %}
+      </ol>
+    </article>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

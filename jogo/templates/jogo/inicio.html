@@ -1,0 +1,27 @@
+{% extends "jogo/base.html" %}
+{% block titulo %}Sorte Animal{% endblock %}
+{% block pagina %}inicio{% endblock %}
+{% block conteudo %}
+<section class="abertura">
+  <p class="olho">Crie uma sala e chame a turma</p>
+  <h1>Escolha os bichos. Compartilhe o código.</h1>
+  <p class="lead">Quem cria o jogo monta várias jogadas, decide quais animais entram em cada uma e manda o código. Quem recebe entra na hora.</p>
+</section>
+<div class="duas">
+  <form method="post" class="cartao-form">
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="criar">
+    <h2>Criar um jogo</h2>
+    <label>Seu nome<input name="nome" maxlength="40" required placeholder="Como a turma te chama"></label>
+    <label>Nome do jogo<input name="titulo" maxlength="60" placeholder="Ex.: Turma de sexta"></label>
+    <button type="submit">Criar sala</button>
+  </form>
+  <form method="post" class="cartao-form claro">
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="entrar">
+    <h2>Tenho um código</h2>
+    <label>Código da sala<input name="codigo" maxlength="5" required placeholder="AB3KD" autocapitalize="characters"></label>
+    <button type="submit" class="contorno">Entrar na sala</button>
+  </form>
+</div>
+{% endblock %}

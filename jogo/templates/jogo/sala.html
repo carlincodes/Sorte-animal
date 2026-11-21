@@ -1,0 +1,62 @@
+{% extends "jogo/base.html" %}
+{% block titulo %}{{ sala.titulo }} · Sorte Animal{% endblock %}
+{% block pagina %}sala{% endblock %}
+{% block dados %}data-codigo="{{ sala.codigo }}" data-jogada="{% if aberta %}{{ aberta.id }}{% elif ultima %}{{ ultima.id }}{% endif %}" data-status="{% if aberta %}aberta{% elif ultima %}encerrada{% else %}espera{% endif %}"{% endblock %}
+{% block conteudo %}
+<section class="telefone">
+  <p class="olho">{{ sala.titulo }} · código {{ sala.codigo }}</p>
+  {% if anfitriao %}
+    <a class="atalho" href="{% url 'painel' sala.codigo %}">Abrir o painel de quem criou</a>
+  {% endif %}
+
+  {% if not jogador %}
+    <form method="post" class="cartao-form">
+      {% csrf_token %}
+      <h1>Entrar na sala</h1>
+      <p class="lead">{{ sala.anfitriao }} está montando esse jogo. Entra com o seu nome.</p>
+      <label>Seu nome<input name="nome" maxlength="40" required placeholder="Como você quer aparecer"></label>
+      <button type="submit">Entrar</button>
+    </form>
+  {% elif aberta %}
+    <h1>Jogada {{ aberta.ordem }}</h1>
+    {% if minha %}
+      <article class="espera">
+        <p class="olho">Seu palpite</p>
+        <p class="escolha">{% if minha.opcao.imagem %}<img src="{{ minha.opcao.imagem }}" alt="">{% else %}{{ minha.opcao.emoji }}{% endif %} {{ minha.opcao.nome }}</p>
+        <p>Esperando {{ sala.anfitriao }} sortear.</p>
+      </article>
+    {% else %}
+      <p class="lead">Toca no animal que você acha que vai sair.</p>
+      <div class="vitrine">
+        {% for opcao in aberta.opcoes.all %}
+          <button type="button" class="cartao-animal" data-opcao="{{ opcao.id }}">
+            <span class="foto">{% if opcao.imagem %}<img src="{{ opcao.imagem }}" alt="">{% else %}{{ opcao.emoji }}{% endif %}</span>
+            <span>{{ opcao.nome }}</span>
+          </button>
+        {% endfor %}
+      </div>
+      <button type="button" id="confirmar" disabled>Confirmar palpite</button>
+      <p id="aviso" class="avisos"></p>
+    {% endif %}
+  {% elif ultima %}
+    <article class="sorteado">
+      <p class="olho">Jogada {{ ultima.ordem }}</p>
+      <p class="grande">{% if ultima.imagem_sorteada %}<img src="{{ ultima.imagem_sorteada }}" alt="">{% else %}{{ ultima.emoji_sorteado }}{% endif %}</p>
+      <h1>{{ ultima.animal_sorteado }}</h1>
+    </article>
+    <p class="lead">Quando a próxima jogada abrir, os animais aparecem aqui.</p>
+  {% else %}
+    <article class="espera">
+      <h1>Olá, {{ jogador.nome }}.</h1>
+      <p>{{ sala.anfitriao }} ainda está escolhendo os animais da primeira jogada.</p>
+    </article>
+  {% endif %}
+
+  <article class="bloco" id="caixa-placar">
+    <header><h2>Placar</h2><span id="presentes"></span></header>
+    <ol id="placar">
+      {% for pessoa in placar %}<li>{{ pessoa.nome }} · {{ pessoa.pontos }}</li>{% empty %}<li class="miudo">Ninguém pontuou ainda.</li>{% endfor %}
+    </ol>
+  </article>
+</section>
+{% endblock %}

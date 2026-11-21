@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Sorte Animal{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'jogo/sorte.css' %}">
+</head>
+<body data-pagina="{% block pagina %}{% endblock %}" {% block dados %}{% endblock %}>
+  <header class="barra">
+    <a class="logo" href="{% url 'inicio' %}">
+      <span class="marca" aria-hidden="true">S</span>
+      Sorte Animal
+    </a>
+  </header>
+  <main>
+    {% if messages %}
+      <div class="avisos">
+        {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+      </div>
+    {% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
+  <footer>Carlos Silvio e Matheus Barbosa · Prof. Ruan Delgado Gomes · IFPB</footer>
+  {% csrf_token %}
+  <script src="{% static 'jogo/sorte.js' %}"></script>
+</body>
+</html>
