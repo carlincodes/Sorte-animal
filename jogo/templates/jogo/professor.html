@@ -1,0 +1,13 @@
+{% extends "jogo/base.html" %}
+{% block titulo %}Painel de testes · Sorte Animal{% endblock %}
+{% block pagina %}professor{% endblock %}
+{% block conteudo %}
+<section class="abertura">
+  <p class="olho">Painel de testes</p>
+  <h1>Os testes rodam aqui, na frente da banca.</h1>
+  <p class="lead">Cada cartão é uma regra do middleware. O botão sobe brokers só para o teste, nas portas 9411 a 9414, e a sala do jogo continua no 9001 e no 9002.</p>
+  <button type="button" id="rodar">Aplicar os testes</button>
+  <p id="andamento" class="miudo"></p>
+</section>
+<div id="testes" class="testes"></div>
+{% endblock %}
